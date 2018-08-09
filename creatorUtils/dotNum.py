@@ -51,21 +51,20 @@ class DotNumParser(object):
 		if self.__position != 0:
 			raise Exception('__readHead called when position is not 0!');
 		self.__head = [];
-		i = self.__readNextInt();
+		i = self.__readNextInts();
 		self.__entries = i + 1;
-		for x in range(i):
-			self.__head.append(self.__readNextInt());
+		self.__head.extend(self.__readNextInts(i));
 
-	def __readNextInt(self):
+	def __readNextInts(self, amount = 1):
 		"""
 		Reads integer in little endian byte format and big endian bit format.
 		"""
 		a = self.__File.read(4);
 		if len(a) != 4:
 			raise EOFError('Length of data read differs from expected length. Expected {}, got {}'.format(4, len(a)));
-		integer = struct.unpack('<I', a)[0];
-		self.__position += 4;
-		return integer;
+		integers = struct.unpack('<{}I'.format(amount), a);
+		self.__position += 4 * amount;
+		return integers;
 
 	#Public methods#
 	def close(self):
@@ -90,9 +89,8 @@ class DotNumParser(object):
 			pass;
 		os.chdir(saveFolder);
 		for x in range(len(self.__head)):
-			file1 = open(str(x), 'wb');
-			bufferedWrite(file1, self.__File, pagesize, x);
-			file1.close();
+			with open(str(x), 'wb') as file1:
+				bufferedWrite(file1, self.__File, pagesize, x);
 		os.chdir(origin);
 		self.__File.seek(self.__position);
 
@@ -115,7 +113,6 @@ class DotNumGenerator(object):
 		self.__Files = [];
 
 	def addFileByData(self, data, pos = None):
-		data = binString(data);
 		if pos == None:
 			self.__Files.append(('DATA', data));
 		else:
@@ -162,19 +159,17 @@ class DotNumGenerator(object):
 				raise Exception('File {} is too large ({} bytes, which is {} too many).'.format(x, b, b-0xffffffff));
 			lens.append(b);
 		#We will only end up here if no errors have occured
-		f = open(name, 'wb');
-		for x in range(len(lens)):
-			f.write(struct.pack('<I', lens[x]));
+		with open(name, 'wb') as f:
+			f.write(struct.pack('<{}I'.format(len(lens)), *lens));
 			f.flush();
-		for x in range(self.__numberOfFiles):
-			a = self.__Files[x];
-			if a[0] == 'DATA':
-				f.write(a[1]);
-				f.flush();
-			elif a[0] == 'NAME':
-				fi = open(a[1], 'rb');
-				bufferedWrite(f, fi, pagesize, lens[x + 1]);
-				fi.close();
-			elif a[0] == 'FILE':
-				bufferedWrite(f, a[1], pagesize, lens[x + 1]);
-		f.close();
+			for x in range(self.__numberOfFiles):
+				a = self.__Files[x];
+				if a[0] == 'DATA':
+					f.write(a[1]);
+					f.flush();
+				elif a[0] == 'NAME':
+					with open(a[1], 'rb') as fi:
+						bufferedWrite(f, fi, pagesize, lens[x + 1]);
+						fi.close();
+				elif a[0] == 'FILE':
+					bufferedWrite(f, a[1], pagesize, lens[x + 1]);
