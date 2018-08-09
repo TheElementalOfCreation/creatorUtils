@@ -30,42 +30,62 @@ def numToChars(inp, end = BIG):
 	return a;
 
 def pad(inp, num, padding = '0'):
-	if type(padding) not in stringType:
-		raise Exception('Padding must be a single character string');
+	if not isinstance(padding, stringType):
+		raise TypeError('Padding must be a single character string');
 	elif len(padding) != 1:
-		raise Exception('Padding must be a single character string');
-	if type(inp) != str:
+		raise ValueError('Padding must be a single character string');
+	if isinstance(inp, str):
 		inp = str(inp);
 	if (num-len(inp)) <= 0:
 		return inp;
-	return padding*(num-len(inp)) + inp;
+	return padding * (num - len(inp)) + inp;
 
 
 ##-------------------NUMBER-------------------##
 
-def readNum(string, val, end = BIG):
-	if len(string) != val:
-		raise ValueError('String input must be {} bytes. Got {}'.format(val, len(string)));
-	if end:
-		a = bytearray(string[::-1]);
-	else:
-		a = bytearray(string);
-	b = 0;
-	for x in range(val):
-		b = (b << 8) ^ a[x];
-	return b;
+if sys.version_info[0] < 3:
+	def readNum(string, val, end = BIG):
+		if len(string) != val:
+			raise ValueError('String input must be {} bytes. Got {}'.format(val, len(string)));
+		if end:
+			a = bytearray(string[::-1]);
+		else:
+			a = bytearray(string);
+		b = 0;
+		for x in range(val):
+			b = (b << 8) ^ a[x];
+		return b;
+else:
+	def readNum(string, val, end = BIG):
+		if not isinstance(string, bytes):
+			raise TypeError('`string` MUST be an instance of bytes');
+		if len(string) != val:
+			raise ValueError('String input must be {} bytes. Got {}'.format(val, len(string)));
+		if end:
+			a = string[::-1];
+		else:
+			a = string;
+		b = 0;
+		for x in range(val):
+			b = (b << 8) ^ a[x];
+		return b;
 
 def readInt(string, end):
-	return readNum(string, 4, end);
+	a = '<' if end else '>';
+	struct.unpack('{}I'.format(a), string)
 
 def readLong(string, end):
-	return readNum(string, 8, end);
+	a = '<' if end else '>';
+	struct.unpack('{}Q'.format(a), string)
 
 def readShort(string, end):
-	return readNum(string, 2, end);
+	a = '<' if end else '>';
+	struct.unpack('{}H'.format(a), string)
 
 ##-------------------HEXADECIMAL-------------------##
-def strToHex(s):
+def strToHex(s, encoding = None):
+	if encoding:
+		s = s.encode(encoding);
 	return ''.join('{:02x}'.format(ord(c)) for c in s);
 
 def numToHex(inp):
@@ -74,21 +94,22 @@ def numToHex(inp):
 		out = '0' + out;
 	return out;
 
-def toHex(inp):
+def toHex(inp, encoding = None):
 	"""
 	Converts many data types into a hexadecimal value. Value is not
-	prepended with "0x", but it is prepended with a single "0" if
-	the length is not a multiple of two. Input type matters as it
-	determines what function will be used to convert it. The table
-	bellow shows how the function is determined.
+	prepended with "0x", but it is prepended with a single "0" if the
+	length is not a multiple of two. If encoding is specified, it will
+	only be used if needed Input type matters as it determines what
+	function will be used to convert it. The table bellow shows how the
+	function is determined.
 	 + String:  \tforma.strToHex
 	 + Unicode: \tforma.strToHex
 	 + Long:    \tforma.numToHex
 	 + int:     \tforma.numToHex
 	"""
-	if type(inp) in stringType:
+	if isinstance(inp, stringType):
 		return strToHex(inp);
-	if type(inp) in intlong:
+	if isinstance(inp, intlong):
 		return numToHex(inp);
 	raise TypeError('Input must be an integer, long, string, or unicode.');
 
