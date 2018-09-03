@@ -1,7 +1,7 @@
 import hashlib;
 import math;
 import os;
-#import random;
+import random;
 import sys;
 from creatorUtils.compat import progress_bar, structures;
 from creatorUtils.compat.types import *;
