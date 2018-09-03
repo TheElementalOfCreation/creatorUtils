@@ -25,7 +25,7 @@ SHA224 = 'SHA224';
 SHA256 = 'SHA256';
 SHA384 = 'SHA384';
 SHA512 = 'SHA512';
-WHIRLPOOL = 'WHIRLPOOL';
+WHIRLPOOL = 'whirlpool';
 
 HASH_METHODS = [
 	MD4,
@@ -157,6 +157,7 @@ def file(path1, key, pagesize = 262144, rand = True, overwrite = False, hash_met
 			function to write to the file "(filename).crypt".
 	"""
 	pagesize = int(pagesize);
+	key = bytes(key);
 	if pagesize < 1024:
 		raise Exception('pagesize MUST be at least 1024 for stability');
 	#if pagesize > 4096:
@@ -174,15 +175,15 @@ def file(path1, key, pagesize = 262144, rand = True, overwrite = False, hash_met
 			fsize = int(math.ceil(os.path.getsize(path1)/float(pagesize)));
 			probar = progress_bar.ProgressBar();
 			start = 0;
-			r = HashDataGenerator(key, methods = methods);
+			r = HashDataGenerator(key, methods = hash_methods);
 			if rand:
 				for x in probar(range(fsize)):
-					file2.write(randXOR(file1.read(pagesize), key, r, start));
+					file2.write(randXOR(bytes(file1.read(pagesize)), key, r, start));
 					file2.flush();
 					start = (start + pagesize) % len(key);
 			else:
 				for x in probar(range(fsize)):
-					file2.write(bxor(file1.read(pagesize), key, start));
+					file2.write(bxor(bytes(file1.read(pagesize)), key, start));
 					file2.flush();
 	assert(os.path.getsize(path1) == os.path.getsize(nm));
 	if overwrite:
