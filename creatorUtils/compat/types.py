@@ -20,11 +20,11 @@ an integer in Python 3) use:
 	`isinstance(var, intlong)`
 """
 
-import sys
+import sys;
 
 if sys.version_info[0] < 3:
-	stringType = [str, unicode];
-	intlong = [int, long];
+	stringType = (str, unicode);
+	intlong = (int, long);
 	bytes = bytearray;
 else:
 	stringType = [str];
@@ -37,3 +37,4 @@ def a():
 
 function = a.__class__;
 builtin_function = hex.__class__;
+list_types = (list, tuple);

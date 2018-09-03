@@ -1,42 +1,57 @@
+import hashlib;
 import math;
-import random;
 import os;
-from os import path as Path;
+#import random;
 import sys;
-from creatorUtils.compat import progress_bar;
+from creatorUtils.compat import progress_bar, structures;
+from creatorUtils.compat.types import *;
 
-if sys.version_info[0] < 3:
-	req = raw_input;
-else:
-	req = input;
 
 alpha = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+def insecure(algorithm):
+	print('WARNING: Selected method "{}" is considered to be insecure. Use at your own risk.'.format(algorithm));
 
-def bxor(inp, key):
-	"""
-	Preforms the bitwise xor on a full string.
-	"""
-	inp = bytearray(inp);
-	key = bytearray(key)
-	return str(bytearray([inp[i] ^ key[i % len(key)] for i in range(len(inp))]));
+def secure(algorithm):
+	pass;
 
-def string(data, key):
-	"""
-	Encrypts the string "data" with "key".
-	"""
-	return bxor(data, randXOR(data, key));
+def unknown(algorithm):
+	print('WARNING: Unrecognized algorithm "{}". It may be insecure.'.format(algorithm));
 
-def randXOR(data, key, r = None, start = 0):
-	"""
-	"Random" masking function. "r" must be an instance of
-	random.Random
-	"""
-	dlen = len(data);
-	if r == None:
-		r = random.Random(key);
-	key1 = bytearray((key[start:] + (key * int(math.ceil((dlen / float(len(key)))))))[0:len(data)]);
-	data = bytearray(data);
-	return str(bytearray([data[i] ^ key1[i] ^ r.randint(0, 255) for i in range(dlen)]));
+# Define Constants
+MD4 = 'MD4';
+MD5 = 'MD5';
+SHA1 = 'SHA1';
+SHA224 = 'SHA224';
+SHA256 = 'SHA256';
+SHA384 = 'SHA384';
+SHA512 = 'SHA512';
+WHIRLPOOL = 'WHIRLPOOL';
+
+HASH_METHODS = [
+	MD4,
+	MD5,
+	SHA1,
+	SHA224,
+	SHA256,
+	SHA384,
+	SHA512,
+	WHIRLPOOL
+];
+
+HASH_METHOD_WARNING = {
+	MD4: insecure,
+	MD5: secure,
+	SHA1: secure,
+	SHA224: secure,
+	SHA256: secure,
+	SHA384: secure,
+	SHA512: secure,
+	WHIRLPOOL: secure
+};
+
+def generate_new_random(key):
+	#TODO
+	pass;
 
 def randStr(length):
 	"""
@@ -48,7 +63,85 @@ def randStr(length):
 		a += alpha[int(math.floor(random.random() * 52)) % 52];
 	return a;
 
-def file(path1, key, pagesize = 262144, rand = True, overwrite = False):
+class HashDataGenerator(object):
+	"""
+
+	"""
+	def __init__(self, string_or_bytes, encoding = None, methods = [SHA512]):
+		object.__init__(self);
+		for x in methods:
+			HASH_METHOD_WARNING.get(x, unknown)(x);
+		self.__originalData = string_or_bytes if isinstance(string_or_bytes, bytes) else bytes(string_or_bytes, encoding = encoding);
+		self.__method = structures.RepeatingGenerator(methods);
+		self.__currentData = bytes(hashlib.new(self.__method(), self.__originalData).digest());
+		self.__position = 0;
+
+	def gen(self, length):
+		a = bytes(b'');
+		g = len(self.__currentData) - self.__position;
+		a += self.__currentData[self.__position:self.__position + g];
+		remaining = length - len(a);
+		while remaining:
+			self.__currentData = bytes(hashlib.new(self.__method(), self.__currentData).digest());
+			curlen = len(self.__currentData);
+			if remaining <= curlen:
+				self.__position = remaining;
+				a += self.__currentData[:remaining];
+				remaining = 0;
+			else:
+				a += self.__currentData;
+				remaining -= curlen;
+		return a;
+
+	def reset(self):
+		self.__position = 0;
+		self.__method.reset();
+		self.__currentData = self.__originalData;
+
+
+if sys.version_info[0] < 3:
+	req = raw_input;
+else:
+	req = input;
+
+def bxor(inp, key):
+	"""
+	Preforms the bitwise xor on an array of bytes.
+	"""
+	return bytes([inp[i] ^ key[i % len(key)] for i in range(len(inp))]);
+
+def crypt_string(data, key, encoding):
+	"""
+	Encrypts the string "data" with "key".
+	Both should be a string with the same encoding.
+
+	Returns a bytes object.
+	"""
+	return randXOR(bytes(data, encoding), bytes(key, encoding));
+
+def crypt_bytes(data, key):
+	"""
+	Encrypts the bytearray `data` with the bytearray `key`
+	"""
+	return randXOR(data, key);
+
+def randXOR(data, key, r = None, start = 0):
+	"""
+	"Random" masking function. `r` must be an instance of
+	HashDataGenerator.
+	"""
+	if not isinstance(data, bytes):
+		raise TypeError('All data inputs must be bytes.')
+	dlen = len(data);
+	if r == None:
+		r = HashDataGenerator(key);
+	key1 = bytes((key[start:] + (key * int(math.ceil((dlen / float(len(key)))))))[:len(data)]);
+	data = data;
+	rand = r.gen(dlen);
+	return bytes([data[i] ^ key1[i] ^ rand[i] for i in range(dlen)]);
+
+
+def file(path1, key, pagesize = 262144, rand = True, overwrite = False, hash_methods = [SHA512, SHA256, MD5, WHIRLPOOL]):
 	"""
 	Function to encrypt whole files.
 	 +	"path1" is the path to the file to be encrypted.
@@ -72,37 +165,28 @@ def file(path1, key, pagesize = 262144, rand = True, overwrite = False):
 		if req('"Y"/"N" (Case Sensitive!): ') != 'Y':
 			print('Stopping...');
 			return;
-	try:
-		file1 = open(path1, 'rb');
+	with open(path1, 'rb') as file1:
 		while True:
 			nm = randStr(9);
 			if nm not in os.listdir('.'):
 				break;
-		file2 = open(nm, 'wb');
-		fsize = int(math.ceil(Path.getsize(path1)/float(pagesize)));
-		probar = progress_bar.ProgressBar();
-		start = 0;
-		r = random.Random(key);
-		if rand:
-			for x in probar(range(fsize)):
-				file2.write(randXOR(file1.read(pagesize), key, r, start));
-				file2.flush();
-				start = (start + pagesize) % len(key);
-		else:
-			for x in probar(range(fsize)):
-				file2.write(bxor(file1.read(pagesize), key, start));
-				file2.flush();
-		file1.close();
-		file2.close();
-		assert(Path.getsize(path1) == Path.getsize(nm));
-		if overwrite:
-			os.remove(path1);
-			os.rename(nm, path1);
-		else:
-			os.rename(nm, path1 + '.crypt');
-	except:
-		try:
-			file1.close();
-		except:
-			pass;
-		raise;
+		with open(nm, 'wb') as file2:
+			fsize = int(math.ceil(os.path.getsize(path1)/float(pagesize)));
+			probar = progress_bar.ProgressBar();
+			start = 0;
+			r = HashDataGenerator(key, methods = methods);
+			if rand:
+				for x in probar(range(fsize)):
+					file2.write(randXOR(file1.read(pagesize), key, r, start));
+					file2.flush();
+					start = (start + pagesize) % len(key);
+			else:
+				for x in probar(range(fsize)):
+					file2.write(bxor(file1.read(pagesize), key, start));
+					file2.flush();
+	assert(os.path.getsize(path1) == os.path.getsize(nm));
+	if overwrite:
+		os.remove(path1);
+		os.rename(nm, path1);
+	else:
+		os.rename(nm, path1 + '.crypt');
