@@ -157,5 +157,6 @@ class per_message_inflator(object):
 			self.regenCompObj();
 			a = self.__zlib.decompress(data + '\x00\x00\xff\xff');
 			a += self.__zlib.flush();
+		return a;
 
 	decompress = inflate;
