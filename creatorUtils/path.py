@@ -71,7 +71,7 @@ def getall(inp, specExt = True, ext = ['msg'], extsep = '.', progressBar = None,
 	c = [];
 	v = os.walk(inp, onerror = onerror);
 	if progressBar == None:
-		progressBar = pb.ProgressBar();
+		progressBar = pb.Dummy();
 	iterator = progressBar(v);
 	isfile = True;
 	try:
@@ -135,7 +135,7 @@ def isFile(inp):
 	if os.path.exists(inp):
 		return os.path.isfile(inp);
 	else:
-		raise OSError('Cannot find the path specified: "{}"'.format(inp));
+		raise OSError('Cannot find the path specified: "' + inp + '"');
 
 def isFolder(inp):
 	"""
@@ -146,7 +146,7 @@ def isFolder(inp):
 	if os.path.exists(inp):
 		return os.path.isdir(inp);
 	else:
-		raise OSError('Cannot find the path specified: "{}"'.format(inp));
+		raise OSError('Cannot find the path specified: "' + inp + '"');
 
 def split(inp):
 	"""

@@ -20,15 +20,17 @@ an integer in Python 3) use:
 	`isinstance(var, intlong)`
 """
 
-import sys;
+from sys import version_info;
 
-if sys.version_info[0] < 3:
+if version_info[0] < 3:
+	ModuleNotFoundError = ImportError;
 	stringType = (str, unicode);
 	intlong = (int, long);
 	bytes = bytearray;
 else:
-	stringType = [str];
-	intlong = [int];
+	bytes = bytes;
+	stringType = (str,);
+	intlong = (int,);
 	import io;
 	file = io.IOBase;
 
@@ -37,4 +39,7 @@ def a():
 
 function = a.__class__;
 builtin_function = hex.__class__;
+method = __builtins__.type.__init__.__class__;
+module = __builtins__.__class__;
+functionType = (function, builtin_function, __builtins__.classmethod, method);
 list_types = (list, tuple);

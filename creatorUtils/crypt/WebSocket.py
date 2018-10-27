@@ -1,4 +1,5 @@
 import base64;
+import gc;
 import hashlib;
 import zlib;
 import struct;
@@ -147,16 +148,23 @@ class per_message_inflator(object):
 		self.regenCompObj();
 
 	def regenCompObj(self):
+		try:
+			del self.__zlib;
+		except:
+			pass;
+		gc.collect();
 		self.__zlib = zlib.decompressobj(*self.__options[0], **self.__options[1]);
 
 	def inflate(self, data):
 		try:
 			a = self.__zlib.decompress(data + '\x00\x00\xff\xff');
 			a += self.__zlib.flush();
-		except:
+			return a;
+		except Exception as e:
+			print(e);
 			self.regenCompObj();
 			a = self.__zlib.decompress(data + '\x00\x00\xff\xff');
 			a += self.__zlib.flush();
-		return a;
+			return a;
 
 	decompress = inflate;

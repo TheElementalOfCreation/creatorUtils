@@ -3,19 +3,26 @@ import math;
 import os;
 import random;
 import sys;
-from creatorUtils.compat import progress_bar, structures;
+from creatorUtils.compat import progress_bar;
+from creatorUtils.compat import structures;
 from creatorUtils.compat.types import *;
 
+def create_hash(name, data):
+	HASH_FUNCTIONS[name][0](*HASH_FUNCTIONS[name], data);
 
 alpha = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
 def insecure(algorithm):
-	print('WARNING: Selected method "{}" is considered to be insecure. Use at your own risk.'.format(algorithm));
+	print('WARNING: Selected method "' + algorithm + '" is considered to be insecure. Use at your own risk.');
 
 def secure(algorithm):
 	pass;
 
 def unknown(algorithm):
-	print('WARNING: Unrecognized algorithm "{}". It may be insecure.'.format(algorithm));
+	print('WARNING: Unrecognized algorithm "' + algorithm + '". It may be insecure.');
+
+def hashlib_hash_functions(method, data):
+	return hashlib.new(method, data).digest()
 
 # Define Constants
 MD4 = 'MD4';
@@ -49,9 +56,16 @@ HASH_METHOD_WARNING = {
 	WHIRLPOOL: secure
 };
 
-def generate_new_random(key):
-	#TODO
-	pass;
+HASH_FUNCTIONS = {
+	MD4: (hashlib_hash_functions, (MD4,)),
+	MD5: (hashlib_hash_functions, (MD5,)),
+	SHA1: (hashlib_hash_functions, (SHA1,)),
+	SHA224: (hashlib_hash_functions, (SHA224,)),
+	SHA256: (hashlib_hash_functions, (SHA256,)),
+	SHA384: (hashlib_hash_functions, (SHA384,)),
+	SHA512: (hashlib_hash_functions, (SHA512,)),
+	WHIRLPOOL: (hashlib_hash_functions, (WHIRLPOOL,))
+}
 
 def randStr(length):
 	"""
@@ -72,7 +86,7 @@ class HashDataGenerator(object):
 		for x in methods:
 			HASH_METHOD_WARNING.get(x, unknown)(x);
 		self.__originalData = string_or_bytes if isinstance(string_or_bytes, bytes) else bytes(string_or_bytes, encoding = encoding);
-		self.__method = structures.RepeatingGenerator(methods);
+		self.__method = structures.repeater(methods);
 		self.__currentData = bytes(hashlib.new(self.__method(), self.__originalData).digest());
 		self.__position = 0;
 
@@ -82,7 +96,7 @@ class HashDataGenerator(object):
 		a += self.__currentData[self.__position:self.__position + g];
 		remaining = length - len(a);
 		while remaining:
-			self.__currentData = bytes(hashlib.new(self.__method(), self.__currentData).digest());
+			self.__currentData = bytes(create_hash(self.__method(), self.__currentData));
 			curlen = len(self.__currentData);
 			if remaining <= curlen:
 				self.__position = remaining;
@@ -112,7 +126,7 @@ def bxor(inp, key):
 
 def crypt_string(data, key, encoding):
 	"""
-	Encrypts the string "data" with "key".
+	Encrypts the string `data` with `key`.
 	Both should be a string with the same encoding.
 
 	Returns a bytes object.
@@ -141,7 +155,7 @@ def randXOR(data, key, r = None, start = 0):
 	return bytes([data[i] ^ key1[i] ^ rand[i] for i in range(dlen)]);
 
 
-def file(path1, key, pagesize = 262144, rand = True, overwrite = False, hash_methods = [SHA512, SHA256, MD5, WHIRLPOOL]):
+def crypt_file(path1, key, pagesize = 262144, rand = True, overwrite = False, hash_methods = [SHA512, SHA256, MD5, WHIRLPOOL]):
 	"""
 	Function to encrypt whole files.
 	 +	"path1" is the path to the file to be encrypted.
@@ -191,3 +205,27 @@ def file(path1, key, pagesize = 262144, rand = True, overwrite = False, hash_met
 		os.rename(nm, path1);
 	else:
 		os.rename(nm, path1 + '.crypt');
+
+
+
+def add_new_hash_method(name, security, hash_function, args):
+	"""
+	Use to define a new type of hash function. Provide the name,
+	one of the security functions (secure, insecure, unknown),
+	the function to do the hash, and any arguments that come
+	before the data input.
+	"""
+	if not isinstance(name, stringType):
+		raise TypeError('Name must be a string.');
+	if len(name) == 0:
+		raise ValueError('Name must be at least one character long.');
+	if not isinstance(security, functionType):
+
+	# No issues with the inputs themselves
+	if name in HASH_METHODS:
+		raise Exception('Method already exists: '+ name);
+
+	# Seems to be valid, and does not already exist
+	HASH_METHODS.append(name);
+	HASH_METHOD_WARNING[name] = security;
+	HASH_FUNCTIONS[name] = (hash_function, tuple(args));

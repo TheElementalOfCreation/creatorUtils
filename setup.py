@@ -8,7 +8,7 @@ with open("LICENSE", "r") as fh:
 
 setuptools.setup(
 	name = "creatorUtils",
-	version = "0.2.0",
+	version = "0.2.1",
 	author = "The Elemental of Creation",
 	author_email = "arceusthe@gmail.com",
 	description = "creatorUtils main package",
