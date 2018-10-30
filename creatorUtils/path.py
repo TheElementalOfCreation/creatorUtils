@@ -1,4 +1,5 @@
 import os;
+from creatorUtils import canceler;
 from creatorUtils.compat.types import *;
 from creatorUtils.compat import progress_bar as pb;
 
@@ -39,7 +40,7 @@ else:
 	def get_short_path_name(input):
 		return input;
 
-def getall(inp, specExt = True, ext = ['msg'], extsep = '.', progressBar = None, onerror = None):
+def getall(inp, specExt = True, ext = ['msg'], extsep = '.', progressBar = None, onerror = None, _canceler = canceler.FAKE):
 	"""
 	Return format:
 		PathTable, NameTable, outPath
@@ -76,6 +77,8 @@ def getall(inp, specExt = True, ext = ['msg'], extsep = '.', progressBar = None,
 	isfile = True;
 	try:
 		while True:
+			if _canceler.get():
+				return;
 			current = iterator.next();
 			isfile = False;
 			for x in current[2]:
