@@ -27,3 +27,11 @@ ____
 
 * Currently missing full pip compatibility. I plan to have it be installable by name rather than by URL.
 * As `creatorUtils.crypt.WebSocket` is still a work in progress, some of its features may not work properly. Please check for sections marked as `TODO` or notes on a section before reporting bugs about it.
+
+
+____
+
+### NOTICE:
+
+____
+Permission has been given to mattgwwalker to directly embed several functions into his <a href="https://github.com/mattgwwalker/msg-extractor">msg-extractor</a> script.
