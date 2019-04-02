@@ -17,11 +17,15 @@ if os.name == 'nt':
 		BUFFER_SIZE = 500;
 		buffer = create_unicode_buffer(BUFFER_SIZE);
 		windll.kernel32.GetLongPathNameW(input, buffer, BUFFER_SIZE);
-		return buffer.value;
+		out = buffer.value;
+		return input if out == u'' and get_short_path_name(input) != u'' else out;
 
 	def get_short_path_name(long_name):
 		"""
 		Gets the short path name of a given long path.
+
+		Will still return the short path even if a short
+		path is the input.
 		http://stackoverflow.com/a/23598461/200291
 		"""
 		output_buf_size = 0;

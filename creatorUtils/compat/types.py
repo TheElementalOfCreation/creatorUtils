@@ -39,7 +39,7 @@ def a():
 
 function = a.__class__;
 builtin_function = hex.__class__;
-method = __builtins__.type.__init__.__class__;
-module = __builtins__.__class__;
-functionType = (function, builtin_function, __builtins__.classmethod, method);
+# method = __builtins__.type.__init__.__class__;
+# module = __builtins__.__class__;
+# functionType = (function, builtin_function, __builtins__.classmethod, method);
 list_types = (list, tuple);

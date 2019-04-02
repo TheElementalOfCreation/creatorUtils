@@ -7,12 +7,11 @@ import struct;
 from creatorUtils import forma;
 from creatorUtils.compat.types import *;
 
-def unmask(data, masked = None):
+def unmask(data):
 	data = bytes(data);
 	toRead = 0;
 	remaining = bytes(b'');
-	if masked == None:
-		masked = 128 == (data[1] & 128);
+	masked = 128 == (data[1] & 128);
 	datalen = (0x7F & data[1]);
 	if datalen == 126:
 		x = 4;
@@ -23,7 +22,6 @@ def unmask(data, masked = None):
 	else:
 		x = 2;
 		toRead = datalen;
-	print(bin(data[0]), bin(data[1]), toRead)
 	if masked:
 		str_data = '';
 		if datalen > 0:

@@ -15,7 +15,30 @@ BIG = False; # Marker for big endian
 
 
 ##-------------------STRING-------------------##
+
+def divide(string, length):
+	"""
+	Divides a string into multiple substrings of equal length
+
+	:param string: string to be divided.
+	:param length: length of each division.
+	:returns: list containing the divided strings.
+
+	Example:
+	>>>> a = divide('Hello World!', 2)
+	>>>> print(a)
+	['He', 'll', 'o ', 'Wo', 'rl', 'd!']
+	"""
+	return [string[length*x:length*(x+1)] for x in range(int(len(string)/length))];
+
 def hexToStr(inp):
+	"""
+	Converts a hexadecimal stream into a string.
+
+	Example:
+	>>>> hexToStr('00002031')
+	'\\x00\\x00 1'
+	"""
 	a = '';
 	if math.floor(len(inp)/2.0) != len(inp)/2.0:
 		inp = '0' + inp;

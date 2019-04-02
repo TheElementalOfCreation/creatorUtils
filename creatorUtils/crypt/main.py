@@ -42,7 +42,7 @@ HASH_METHODS = [
 	SHA256,
 	SHA384,
 	SHA512,
-	WHIRLPOOL
+	WHIRLPOOL,
 ];
 
 HASH_METHOD_WARNING = {
@@ -53,7 +53,7 @@ HASH_METHOD_WARNING = {
 	SHA256: secure,
 	SHA384: secure,
 	SHA512: secure,
-	WHIRLPOOL: secure
+	WHIRLPOOL: secure,
 };
 
 HASH_FUNCTIONS = {
@@ -64,8 +64,8 @@ HASH_FUNCTIONS = {
 	SHA256: (hashlib_hash_functions, (SHA256,)),
 	SHA384: (hashlib_hash_functions, (SHA384,)),
 	SHA512: (hashlib_hash_functions, (SHA512,)),
-	WHIRLPOOL: (hashlib_hash_functions, (WHIRLPOOL,))
-}
+	WHIRLPOOL: (hashlib_hash_functions, (WHIRLPOOL,)),
+};
 
 def randStr(length):
 	"""
@@ -79,7 +79,7 @@ def randStr(length):
 
 class HashDataGenerator(object):
 	"""
-
+	EMPTY
 	"""
 	def __init__(self, string_or_bytes, encoding = None, methods = [SHA512]):
 		object.__init__(self);
