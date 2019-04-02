@@ -83,7 +83,7 @@ def getall(inp, specExt = True, ext = ['msg'], extsep = '.', progressBar = None,
 		while True:
 			if _canceler.get():
 				return;
-			current = iterator.next();
+			current = iterator.__next__();
 			isfile = False;
 			for x in current[2]:
 				if not specExt or x.split(extsep).pop().lower() in ext:
