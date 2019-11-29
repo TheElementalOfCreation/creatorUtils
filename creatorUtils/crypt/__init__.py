@@ -1,4 +1,4 @@
 __all__ = [
 	'main',
-	'WebSocket'
-];
+	'WebSocket',
+]

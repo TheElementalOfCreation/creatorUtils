@@ -1,0 +1,34 @@
+**/*
+**/__pycache__
+**/*.pyc
+
+# Python files and folders
+!/creatorUtils
+!/creatorUtils/compat
+!/creatorUtils/compat/__init__.py
+!/creatorUtils/compat/os_.py
+!/creatorUtils/compat/progress_bar.py
+!/creatorUtils/compat/structures.py
+!/creatorUtils/compat/types.py
+
+!/creatorUtils/crypt
+!/creatorUtils/crypt/__init__.py
+!/creatorUtils/crypt/main.py
+!/creatorUtils/crypt/WebSocket.py
+
+!/creatorUtils/__init__.py
+!/creatorUtils/base64.py
+!/creatorUtils/canceler.py
+!/creatorUtils/dotNum.py
+!/creatorUtils/forma.py
+!/creatorUtils/json2.py
+!/creatorUtils/path.py
+!/creatorUtils/rounder.py
+!/creatorUtils/tkinter_extended.py
+
+
+# Generic files and folders
+!/.gitignore
+!/LICENSE
+!/README.md
+!/setup.py

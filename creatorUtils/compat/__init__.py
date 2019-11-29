@@ -1,6 +1,6 @@
 __all__ = [
-	'os_',
-	'progressbar',
-	'structures',
-	'types',
-];
+    'os_',
+    'progressbar',
+    'structures',
+    'types',
+]

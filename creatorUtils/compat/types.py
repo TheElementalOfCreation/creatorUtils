@@ -8,38 +8,38 @@ scrits.
 To check if a variable is a string or unicode
 (or just a string in Python 3), use:
 
-	`type(var) in stringType`
-			or
-	`isinstance(var, stringType)`
+    `type(var) in stringType`
+            or
+    `isinstance(var, stringType)`
 
 to check if a variable is an integer or long (or just
 an integer in Python 3) use:
 
-	`type(var) in intlong`
-			or
-	`isinstance(var, intlong)`
+    `type(var) in intlong`
+            or
+    `isinstance(var, intlong)`
 """
 
-from sys import version_info;
+from sys import version_info
 
 if version_info[0] < 3:
-	ModuleNotFoundError = ImportError;
-	stringType = (str, unicode);
-	intlong = (int, long);
-	bytes = bytearray;
+    ModuleNotFoundError = ImportError
+    stringType = (str, unicode)
+    intlong = (int, long)
+    bytes = bytearray
 else:
-	bytes = bytes;
-	stringType = (str,);
-	intlong = (int,);
-	import io;
-	file = io.IOBase;
+    bytes = bytes
+    stringType = (str,)
+    intlong = (int,)
+    import io
+    file = io.IOBase
 
 def a():
-	pass;
+    pass
 
-function = a.__class__;
-builtin_function = hex.__class__;
-# method = __builtins__.type.__init__.__class__;
-# module = __builtins__.__class__;
-# functionType = (function, builtin_function, __builtins__.classmethod, method);
-list_types = (list, tuple);
+function = a.__class__
+builtin_function = hex.__class__
+# method = __builtins__.type.__init__.__class__
+# module = __builtins__.__class__
+# functionType = (function, builtin_function, __builtins__.classmethod, method)
+list_types = (list, tuple)

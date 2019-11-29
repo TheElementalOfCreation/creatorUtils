@@ -2,16 +2,34 @@ __all__ = [
 	'__all__',
 	'__author__',
 	'__version__',
-	'base64',
-	'canceler',
+	'algebra',
+	'approx',
+	'armorBlitz',
+	'chat',
+	'checkFiles',
+	'color',
 	'compat',
+	'cracks',
+	'cross_a_pix',
 	'crypt',
+	'dig',
+	'disassemble',
 	'dotNum',
+	'extractFromFile',
+	'flowerKnight',
 	'forma',
+	'har',
 	'json2',
+	'kwargsManager',
+	'nutaku',
+	'osawari',
 	'path',
-	'rounder',
-];
-__author__ = 'Ken Peterson A.K.A. The Elemental of Creation';
-__url__ = 'https://github.com/TheElementalOfCreation';
-__version__ = '0.2.1';
+	'reassemble',
+	'round',
+	'rtf',
+	'TCPChat',
+	'wget',
+]
+__author__ = 'Ken Peterson A.K.A. The Elemental of Creation'
+__url__ = 'https://github.com/TheElementalOfCreation'
+__version__ = '0.3.0'
