@@ -123,7 +123,7 @@ def getall(inp, specExt = True, ext = ['msg'], extsep = '.', progressBar = None,
             progressBar.start()
             for thread in threadlist:
                 thread.start()
-            while all(thread.is_alive() for thread in threadlist):
+            while any(thread.is_alive() for thread in threadlist):
                 progressBar.update(pb_values.total)
             progressBar.finish()
             for x in out:
