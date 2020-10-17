@@ -32,4 +32,4 @@ __all__ = [
 ]
 __author__ = 'Ken Peterson A.K.A. The Elemental of Creation'
 __url__ = 'https://github.com/TheElementalOfCreation'
-__version__ = '0.3.0'
+__version__ = '0.4.0'

@@ -11,11 +11,23 @@ cannot, it will define the necessary classes.
 import sys
 
 class Dummy(object):
+    max_value = None
+    min_value = None
+    value = None
     def __init__(self, *args, **kwargs):
         object.__init__(self)
 
     def __call__(self, inp):
         return inp
+
+    def start(self, *args, **kwargs):
+        pass
+
+    def finish(self, *args, **kwargs):
+        pass
+
+    def update(self, *args, **kwargs):
+        pass
 
 
 

@@ -1,7 +1,26 @@
+import math
 import os
+import threading
+
 from creatorUtils import canceler
 from creatorUtils.compat.types import *
 from creatorUtils.compat import progress_bar as pb
+from creatorUtils import forma
+
+class PBValues(object):
+    """
+    Class for storing all of the values to be used for the multithreaded version of getall. Can be reused for other multithreaded functions.
+    """
+    def __init__(self, amount):
+        self.__values = {x: 0 for x in range(amount)}
+
+    def update(self, id, increment):
+        self.__values[id] += increment
+
+    @property
+    def total(self):
+        return sum(self.__values[x] for x in self.__values)
+
 
 
 if os.name == 'nt':
@@ -44,7 +63,7 @@ else:
     def get_short_path_name(input):
         return input
 
-def getall(inp, specExt = True, ext = ['msg'], extsep = '.', progressBar = None, onerror = None, _canceler = canceler.FAKE):
+def getall(inp, specExt = True, ext = ['msg'], extsep = '.', progressBar = None, onerror = None, _canceler = canceler.FAKE, threads = 1, outpath = False):#, caseSensitive = False):
     """
     Return format:
         PathTable, NameTable, outPath
@@ -57,7 +76,97 @@ def getall(inp, specExt = True, ext = ['msg'], extsep = '.', progressBar = None,
     > `scepExt`:        Boolean. Tells the function if you are ONLY looking for files
                         with the extension "ext".
     > `ext`:            The specific extension that a file must have is scepExt is True.
-    > `extsep`:            Specifies the seperator between filename and extension.
+    > `extsep`:         Specifies the seperator between filename and extension.
+    > `progressBar`:    Specifies the progress bar to use. Should either be None or a
+                        progressbar instance.
+    > `onerror`:        Function to be passed to the `onerror` argument of `os.walk`.
+    > `threads`:        Number of threads to use. If threads is 1 then it will use the
+                        main thread
+    """
+    if type(ext) in stringType:
+        ext = [ext]
+    if isinstance(ext, tuple):
+        ext = list(ext)
+    if not isinstance(ext, list):
+        raise TypeError('Input "ext" must be a list, tuple, or string')
+    for x in range(len(ext)):
+        ext[x] = ext[x].lower() #Change the input extension to all lowercase letters
+    if threads < 1:
+        raise ValueError('Thread count must be at least 1')
+    inp = get_long_path_name(get_short_path_name(os.path.abspath(inp)))
+    inp = inp.replace('\\','/') #Replaces every "\" in a path with a "/".
+    a = []
+    c = []
+    if progressBar == None:
+        progressBar = pb.Dummy()
+    progressBar.init()
+    v = tuple(progressBar(os.walk(inp, onerror = onerror)))
+    if isFile(inp):
+        if inp[inp.rfind(extsep)+1:].lower() in ext:
+            a.append(inp)
+            c.append(extsep.join(inp.split('/')[-1].split(extsep)[:-1]))
+    else:
+        if threads == 1:
+            for current in progressBar(v):
+                if _canceler.get():
+                    return
+                for x in current[2]:
+                    if not specExt or x[x.rfind(extsep)+1:].lower() in ext:
+                        a.append(current[0].replace('\\', '/') + '/' + x)
+                        c.append(x)
+        else:
+            out = []
+            progressBar.init()
+            progressBar.max_value = len(v)
+            pb_values = PBValues(threads)
+            threadlist = [threading.Thread(target = __getAllThread(inputs, out, pb_values, id, specExt, ext, extsep, onerror, _canceler)) for id, inputs in enumerate(forma.divide(v, int(math.ceil(len(v) / threads))))]
+            progressBar.start()
+            for thread in threadlist:
+                thread.start()
+            while all(thread.is_alive() for thread in threadlist):
+                progressBar.update(pb_values.total)
+            progressBar.finish()
+            for x in out:
+                if _canceler.get():
+                    return
+                a.append(x[0])
+                c.append(x[1])
+    outPath = '/'.join(inp.split('/')[:-1])
+    if outpath:
+        return a, c, outPath
+    else:
+        return a, c
+
+def __getAllThread(inp, out, pb_values, id, specExt = True, ext = ['msg'], extsep = '.', onerror = None, _canceler = canceler.FAKE):
+    """
+    Individual thread to be used by the getall function.
+    `in`:  The list to parse through
+    `out`: The list to append outputs to.
+    """
+    for current in inp:
+        if _canceler.get():
+            return
+        pb_values.update(id, 1)
+        for x in current[2]:
+            if not specExt or x[x.rfind(extsep)+1:].lower() in ext:
+                out.append((current[0].replace('\\', '/') + '/' + x, x))
+
+def getallFolders(inp, foldersOnly = False, folderExt = False, specExt = True, ext = ['msg'], extsep = '.', progressBar = None, onerror = None, _canceler = canceler.FAKE):
+    """
+    !!!NOT READY!!!
+    Return format:
+        PathTable, NameTable, outPath
+    Returns a list of the paths of all of the files in
+    a directory and a list of the filenames. If the
+    input is a file instead of a directroy it will
+    return the path and filename of just that file.
+    The arguments are as follows:
+    > `inp`:            The input folder or file.
+    > `foldersOnly`:    Specifies if the function should ONLY find folders.
+    > `scepExt`:        Boolean. Tells the function if you are ONLY looking for files
+                        with the extension "ext".
+    > `ext`:            The specific extension that a file must have is scepExt is True.
+    > `extsep`:         Specifies the seperator between filename and extension.
     > `progressBar`:    Specifies the progress bar to use. Should either be None or a
                         progressbar instance.
     > `onerror`:        Function to be passed to the `onerror` argument of `os.walk`.
@@ -74,25 +183,25 @@ def getall(inp, specExt = True, ext = ['msg'], extsep = '.', progressBar = None,
     inp = inp.replace('\\','/') #Replaces every "\" in a path with a "/".
     a = []
     c = []
+    isfile = isfile(inp)
     v = os.walk(inp, onerror = onerror)
     if progressBar == None:
         progressBar = pb.Dummy()
     iterator = progressBar(v)
-    isfile = True
     try:
         while True:
             if _canceler.get():
                 return
-            current = iterator.next()
+            current = next(iterator)
             isfile = False
             for x in current[2]:
-                if not specExt or x.split(extsep).pop().lower() in ext:
+                if not specExt or x[x.rfind(extsep)+1:].lower() in ext:
                     entry = current[0].replace('\\', '/') + '/' + x
                     a.append(entry)
                     c.append(x)
     except StopIteration:
         if isfile:
-            if inp.split(extsep).pop().lower() in ext:
+            if inp[inp.rfind(extsep)+1:].lower() in ext:
                 a.append(inp)
                 c.append(extsep.join(inp.split('/')[-1].split(extsep)[:-1]))
     outPath = '/'.join(inp.split('/')[:-1])

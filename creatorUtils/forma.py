@@ -18,7 +18,10 @@ BIG = False # Marker for big endian
 
 def divide(string, length):
 	"""
-	Divides a string into multiple substrings of equal length
+	Divides a string into multiple substrings of equal length.
+	If there is not enough for the last substring to be equal,
+    it will simply use the rest of the string.
+	Can also be used for things like lists and tuples.
 
 	:param string: string to be divided.
 	:param length: length of each division.
@@ -29,7 +32,7 @@ def divide(string, length):
 	>>>> print(a)
 	['He', 'll', 'o ', 'Wo', 'rl', 'd!']
 	"""
-	return [string[length*x:length*(x+1)] for x in range(int(len(string)/length))]
+	return [string[length*x:length*(x+1)] for x in range(int(math.ceil(len(string)/length)))]
 
 def hexToStr(inp):
 	"""
