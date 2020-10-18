@@ -29,6 +29,9 @@ class Dummy(object):
     def update(self, *args, **kwargs):
         pass
 
+    def init(self, *args, **kwargs):
+        pass
+
 
 
 try:

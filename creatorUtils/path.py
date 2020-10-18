@@ -99,8 +99,7 @@ def getall(inp, specExt = True, ext = ['msg'], extsep = '.', progressBar = None,
     c = []
     if progressBar == None:
         progressBar = pb.Dummy()
-    progressBar.init()
-    v = tuple(progressBar(os.walk(inp, onerror = onerror)))
+    v = tuple(os.walk(inp, onerror = onerror))
     if isFile(inp):
         if inp[inp.rfind(extsep)+1:].lower() in ext:
             a.append(inp)
@@ -179,33 +178,50 @@ def getallFolders(inp, foldersOnly = False, folderExt = False, specExt = True, e
         raise TypeError('Input "ext" must be a list, tuple, or string')
     for x in range(len(ext)):
         ext[x] = ext[x].lower() #Change the input extension to all lowercase letters
+    if threads < 1:
+        raise ValueError('Thread count must be at least 1')
     inp = get_long_path_name(get_short_path_name(os.path.abspath(inp)))
     inp = inp.replace('\\','/') #Replaces every "\" in a path with a "/".
     a = []
     c = []
-    isfile = isfile(inp)
-    v = os.walk(inp, onerror = onerror)
     if progressBar == None:
         progressBar = pb.Dummy()
-    iterator = progressBar(v)
-    try:
-        while True:
-            if _canceler.get():
-                return
-            current = next(iterator)
-            isfile = False
-            for x in current[2]:
-                if not specExt or x[x.rfind(extsep)+1:].lower() in ext:
-                    entry = current[0].replace('\\', '/') + '/' + x
-                    a.append(entry)
-                    c.append(x)
-    except StopIteration:
-        if isfile:
-            if inp[inp.rfind(extsep)+1:].lower() in ext:
-                a.append(inp)
-                c.append(extsep.join(inp.split('/')[-1].split(extsep)[:-1]))
+    v = tuple(os.walk(inp, onerror = onerror))
+    if isFile(inp):
+        if inp[inp.rfind(extsep)+1:].lower() in ext:
+            a.append(inp)
+            c.append(extsep.join(inp.split('/')[-1].split(extsep)[:-1]))
+    else:
+        if threads == 1:
+            for current in progressBar(v):
+                if _canceler.get():
+                    return
+                for x in current[2]:
+                    if not specExt or x[x.rfind(extsep)+1:].lower() in ext:
+                        a.append(current[0].replace('\\', '/') + '/' + x)
+                        c.append(x)
+        else:
+            out = []
+            progressBar.init()
+            progressBar.max_value = len(v)
+            pb_values = PBValues(threads)
+            threadlist = [threading.Thread(target = __getAllThread(inputs, out, pb_values, id, specExt, ext, extsep, onerror, _canceler)) for id, inputs in enumerate(forma.divide(v, int(math.ceil(len(v) / threads))))]
+            progressBar.start()
+            for thread in threadlist:
+                thread.start()
+            while any(thread.is_alive() for thread in threadlist):
+                progressBar.update(pb_values.total)
+            progressBar.finish()
+            for x in out:
+                if _canceler.get():
+                    return
+                a.append(x[0])
+                c.append(x[1])
     outPath = '/'.join(inp.split('/')[:-1])
-    return a, c, outPath
+    if outpath:
+        return a, c, outPath
+    else:
+        return a, c
 
 def delFolder(path = None, top = True):
     """
