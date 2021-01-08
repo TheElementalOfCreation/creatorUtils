@@ -8,12 +8,12 @@ with open('LICENSE', 'r') as fh:
 
 setuptools.setup(
 	name = 'creatorUtils',
-	version = '0.3.0',
-	author = 'The Elemental of Creation',
+	version = '0.5.0',
+	author = 'The Elemental of Destruction',
 	author_email = 'arceusthe@gmail.com',
 	description = 'creatorUtils main package',
 	long_description = long_description,
-	url = 'https://github.com/TheElementalOfCreation/creatorUtils',
+	url = 'https://github.com/TheElementalOfDestruction/creatorUtils',
 	packages = setuptools.find_packages(),
 	license = li,
 	classifiers = (

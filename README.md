@@ -17,7 +17,7 @@ ____
 ____
 
 Run `{python executable name} setup.py install` from the root directory of the
-package, or run `{python executable name} -m pip install git+https://github.com/TheElementalOfCreation/creatorUtils`
+package, or run `{python executable name} -m pip install git+https://github.com/TheElementalOfDestruction/creatorUtils`
 
 ____
 

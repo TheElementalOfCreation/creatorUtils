@@ -30,6 +30,6 @@ __all__ = [
 	'TCPChat',
 	'wget',
 ]
-__author__ = 'Ken Peterson A.K.A. The Elemental of Creation'
-__url__ = 'https://github.com/TheElementalOfCreation'
-__version__ = '0.4.0'
+__author__ = 'Destiny Peterson A.K.A. The Elemental of Destruction'
+__url__ = 'https://github.com/TheElementalOfDestruction'
+__version__ = '0.5.0'
